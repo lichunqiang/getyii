@@ -4,6 +4,8 @@ namespace common\models;
 use Yii;
 use yii\base\Model;
 use yii\web\Session;
+use common\models\User;
+
 /**
  * Login form
  */
@@ -12,7 +14,6 @@ class LoginForm extends Model
     public $username;
     public $password;
     public $rememberMe = true;
-
     private $_user = false;
 
     /**
@@ -42,7 +43,7 @@ class LoginForm extends Model
         if (!$this->hasErrors()) {
             $user = $this->getUser();
             if (!$user || !$user->validatePassword($this->password)) {
-                $this->addError($attribute, 'Incorrect username or password.');
+                $this->addError($attribute, Yii::t('common', 'Incorrect username or password.'));
             }
         }
     }
@@ -68,21 +69,24 @@ class LoginForm extends Model
     {
         return [
             'id' => 'ID',
-            'username' => '用户名',
-            'password' => '密码',
-            'rememberMe' => '记住我',
+            'username' => Yii::t('common', 'Username'),
+            'password' => Yii::t('common', 'Password'),
+            'rememberMe' => Yii::t('common', 'Remember Me'),
         ];
     }
 
     /**
-     * Finds user by [[username]]
-     *
-     * @return User|null
+     * email 邮箱登录
+     * @user onyony
+     * @return bool|null|static
      */
     public function getUser()
     {
         if ($this->_user === false) {
-            $this->_user = User::findByUsername($this->username);
+            if (strpos($this->username, "@"))
+                $this->_user = User::findByEmail($this->username); //email 登录
+            else
+                $this->_user = User::findByUsername($this->username);
         }
 
         return $this->_user;
@@ -101,10 +105,10 @@ class LoginForm extends Model
         $model->last_login_time = time();
         $model->last_login_ip = Yii::$app->getRequest()->getUserIP();
 
-        if(!Yii::$app->session->isActive){
+        if (!Yii::$app->session->isActive) {
             Yii::$app->session->open();
         }
-        $model->session_id=Yii::$app->session->id;
+        $model->session_id = Yii::$app->session->id;
         Yii::$app->session->close();
 
         if ($model->save()) {
@@ -120,9 +124,9 @@ class LoginForm extends Model
             if (User::isSuperAdmin($this->username)) {
                 return Yii::$app->user->login($this->getUser(), $this->rememberMe ? 3600 * 24 * 30 : 0);
             }
-            $this->addError('username', '你没有权限登录');
+            $this->addError('username', 'You don\'t have permission to login.');
         } else {
-            $this->addError('password', 'Incorrect username or password.');
+            $this->addError('password', Yii::t('common', 'Incorrect username or password.'));
         }
         return false;
     }

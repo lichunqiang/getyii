@@ -16,7 +16,7 @@ return [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-                '<alias:login|logout|about|tags|getstart|signup|contact|users>' => 'site/<alias>',
+                '<alias:login|logout|about|tags|getstart|signup|contact|users|markdown>' => 'site/<alias>',
                 '<alias:search>' => 'topic/default/<alias>',
                 'member/<username:\w+>' => 'user/default/show',
                 'member/<username:\w+>/post' => 'user/default/post',
@@ -61,6 +61,15 @@ return [
                 [
                     'class' => 'yii\log\FileTarget',
                     'levels' => ['error', 'warning', 'info', 'trace'],
+                ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'levels' => ['info'],
+                    'categories' => ['log'],
+                    'logVars' => [], //除了except对应的分类之外，其他的都写入到
+                    'logFile' => '@frontend/runtime/logs/log/app.log',
+                    'maxFileSize' => 1024 * 1,
+                    'maxLogFiles' => 100,
                 ],
             ],
         ],

@@ -83,7 +83,6 @@ class Topic extends Post
 
     }
 
-
     /**
      * 通过ID获取指定话题
      * @param $id
@@ -106,26 +105,53 @@ class Topic extends Post
         return static::findModel($id, ['>=', 'status', self::STATUS_DELETED]);
     }
 
+    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert)) {
+            if ($insert) {
+                $this->last_comment_time = $this->created_at;
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public function afterSave($insert, $changedAttributes)
     {
         parent::afterSave($insert, $changedAttributes);
-        if ($insert) {
-            $search = new Search();
-            $search->topic_id = $this->id;
-            $search->status = self::STATUS_ACTIVE;
-        } else {
-            Yii::$app->cache->set('topic' . $this->id, $this, 0);
-            $search = Search::findOne($this->id);
-            if (!$search) {
-                // 如果立即修改 会因为在 xunsearch 找不到而不能 save
-                return false;
+        if (isset(Yii::$app->params['setting']) && Yii::$app->params['setting']['xunsearch']) {
+            if ($insert) {
+                $search = new Search();
+                $search->topic_id = $this->id;
+                $search->status = self::STATUS_ACTIVE;
+            } else {
+                $search = Search::findOne($this->id);
+                if (!$search) {
+                    // 如果立即修改 会因为在 xunsearch 找不到而不能 save
+                    return false;
+                }
+                $search->status = $this->status;
             }
-            $search->status = $this->status;
+            $search->title = $this->title;
+            $search->content = $this->content;
+            $search->updated_at = $this->updated_at;
+            $search->save();
         }
-        $search->title = $this->title;
-        $search->content = $this->content;
-        $search->updated_at = $this->updated_at;
-        $search->save();
+    }
+
+    /**
+     * 最后回复更新
+     * @param string $username
+     * @return bool
+     */
+    public function lastCommentToUpdate($username = '')
+    {
+        $this->setAttributes([
+            'last_comment_username' => $username,
+            'last_comment_time' => time()
+        ]);
+        return $this->save();
     }
 
     /**

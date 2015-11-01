@@ -2,6 +2,7 @@
 namespace common\models;
 
 use common\helpers\Avatar;
+use devgroup\TagDependencyHelper\ActiveRecordHelper;
 use Yii;
 use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
@@ -51,8 +52,11 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return [
             TimestampBehavior::className(),
+            'class' => ActiveRecordHelper::className(),
         ];
     }
+
+
 
     /**
      * @inheritdoc
@@ -96,6 +100,16 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /**
+     * 邮箱登录
+     * @user onyony
+     * @param $email
+     * @return null|static
+     */
+    public static function findByEmail($email)
+    {
+        return static::findOne(['email' => $email, 'status' => self::STATUS_ACTIVE]);
+    }
+    /**
      * Finds user by password reset token
      *
      * @param string $token password reset token
@@ -109,7 +123,7 @@ class User extends ActiveRecord implements IdentityInterface
 
         return static::findOne([
             'password_reset_token' => $token,
-            'status'               => self::STATUS_ACTIVE,
+            'status' => self::STATUS_ACTIVE,
         ]);
     }
 
@@ -201,7 +215,9 @@ class User extends ActiveRecord implements IdentityInterface
 
     /**
      * 获取用户头像
+     * @param int $size
      * @return string
+     * @throws \yii\base\Exception
      */
     public function getUserAvatar($size = 50)
     {
@@ -210,12 +226,12 @@ class User extends ActiveRecord implements IdentityInterface
             $avatarPath = Yii::$app->basePath . Yii::$app->params['avatarPath'];
             $avatarCachePath = Yii::$app->basePath . Yii::$app->params['avatarCachePath'];
             FileHelper::createDirectory($avatarCachePath); // 创建文件夹
-            if (file_exists($avatarCachePath. $size . '_' . $this->avatar)) {
+            if (file_exists($avatarCachePath . $size . '_' . $this->avatar)) {
                 // 头像是否存在
                 return Yii::$app->params['avatarCacheUrl'] . $size . '_' . $this->avatar;
             }
             \yii\imagine\Image::thumbnail($avatarPath . $this->avatar, $size, $size)
-                ->save($avatarCachePath. $size . '_' . $this->avatar, ['quality' => 100]);
+                ->save($avatarCachePath . $size . '_' . $this->avatar, ['quality' => 100]);
             return Yii::$app->params['avatarCacheUrl'] . $size . '_' . $this->avatar;
         }
         return (new Avatar($this->email, $size))->getAvater();
@@ -252,15 +268,16 @@ class User extends ActiveRecord implements IdentityInterface
     {
         if ($insert) {
             $time = time();
+            $ip = isset(Yii::$app->request->userIP) ? Yii::$app->request->userIP : '127.0.0.1';
             $userInfo = Yii::createObject([
-                'class'           => UserInfo::className(),
-                'user_id'         => $this->id,
+                'class' => UserInfo::className(),
+                'user_id' => $this->id,
                 'prev_login_time' => $time,
-                'prev_login_ip'   => Yii::$app->request->userIP,
+                'prev_login_ip' => $ip,
                 'last_login_time' => $time,
-                'last_login_ip'   => Yii::$app->request->userIP,
-                'created_at'      => $time,
-                'updated_at'      => $time,
+                'last_login_ip' => $ip,
+                'created_at' => $time,
+                'updated_at' => $time,
             ]);
             $userInfo->save();
         }

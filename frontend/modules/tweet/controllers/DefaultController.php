@@ -13,6 +13,8 @@ use Yii;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\web\NotFoundHttpException;
+use yiier\AutoloadExample;
+use yiier\request\ThrottleBehavior;
 
 class DefaultController extends Controller
 {
@@ -35,7 +37,7 @@ class DefaultController extends Controller
                     // 登录用户才能操作
                     ['allow' => true, 'actions' => ['create'], 'roles' => ['@']],
                 ]
-            ]
+            ],
         ];
     }
 
@@ -45,7 +47,7 @@ class DefaultController extends Controller
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
         $dataProvider->query->andWhere([
             Post::tableName() . '.type' => Tweet::TYPE,
-            'status'=>[Post::STATUS_ACTIVE, Post::STATUS_EXCELLENT]
+            'status' => [Post::STATUS_ACTIVE, Post::STATUS_EXCELLENT]
         ]);
 
         $model = new Tweet();
