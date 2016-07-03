@@ -187,7 +187,7 @@ a.desc:after {
 }
 
 /*代码高亮*/
-.article pre, .markdown-reply pre {
+.article pre, .user-default-index pre, .markdown pre, .markdown-reply pre, .tweet pre {
     padding: 0;
 }
 
@@ -359,9 +359,6 @@ img.emoji {
     display: inline-block;
 }
 
-pre {
-    padding: 0;
-}
 
 .donate p {
     margin-top: 10px;
@@ -388,4 +385,12 @@ pre {
 .follow-info a.counter {
     font-size: 32px;
     color: #5CB85C;
+}
+
+.tweet h1, .tweet h2, .tweet h3, .tweet h4 {
+    font-size: 14px;
+}
+
+.user-card {
+    margin-bottom: 15px;
 }

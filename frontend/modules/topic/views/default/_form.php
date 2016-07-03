@@ -6,7 +6,6 @@ use yii\widgets\ActiveForm;
 use dosamigos\selectize\SelectizeTextInput;
 use kartik\select2\Select2;
 
-\frontend\assets\AtJsAsset::register($this);
 ?>
 <div class="list-group-item">
 
@@ -94,6 +93,10 @@ use kartik\select2\Select2;
     ]) ?>
 
     <div class="form-group">
+        <?= $form->field($model, 'cc')->checkbox()  ?>
+    </div>
+
+    <div class="form-group">
         <?= Html::submitButton(
             $model->isNewRecord ? '创建话题' : '修改话题',
             [
@@ -113,3 +116,6 @@ use kartik\select2\Select2;
     <?php ActiveForm::end(); ?>
 
 </div>
+<?php
+\frontend\assets\AtJsAsset::register($this);
+?>
